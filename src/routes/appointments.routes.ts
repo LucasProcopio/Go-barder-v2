@@ -1,36 +1,27 @@
 import { Router } from 'express';
-import { v4 } from 'uuid';
-import { parseISO, isEqual, startOfHour } from 'date-fns';
 
-import Appointment from '../entities/Appointment';
+import AppointmentRepository from '../repositories/AppointmentRepository';
 
 // Retorna objeto router contendo objeto de functionalidades de rotas do express
 const appointmentsRouter = Router();
+const appointmentRepository = new AppointmentRepository();
 
-const appointments: Appointment[] = [];
+appointmentsRouter.get('/', (req, res) => {
+  const appointments = appointmentRepository.getAll();
+  return res.json(appointments);
+});
 
 appointmentsRouter.post('/', (req, res) => {
   const { provider, date } = req.body;
-  const parsedDate = startOfHour(parseISO(date));
+  const appointmentBooked = appointmentRepository.shouldBookHour(date);
 
-  const appointment = {
-    id: v4(),
-    provider,
-    date: parsedDate,
-  };
-
-  const hourNotAvailable = appointments.find(element =>
-    isEqual(element.date, parsedDate),
-  );
-
-  if (hourNotAvailable) {
+  if (appointmentBooked) {
     return res.status(400).json({
       message: 'An appointment already exists for this date and time.',
     });
   }
 
-  appointments.push(appointment);
-
+  const appointment = appointmentRepository.create(provider, date);
   return res.json(appointment);
 });
 
