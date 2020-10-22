@@ -21,7 +21,7 @@ appointmentsRouter.post('/', (req, res) => {
     });
   }
 
-  const appointment = appointmentRepository.create(provider, date);
+  const appointment = appointmentRepository.create({ provider, date });
   return res.json(appointment);
 });
 

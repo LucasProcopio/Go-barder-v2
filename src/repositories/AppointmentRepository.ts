@@ -1,6 +1,11 @@
 import { isEqual, parseISO, startOfHour } from 'date-fns';
 import Appointment from '../entities/Appointment';
 
+// DTO (data transfer object pattern)
+interface createAppointmentDTO {
+  provider: string;
+  date: string;
+}
 class AppointmentRepository {
   private appointments: Appointment[];
 
@@ -12,9 +17,9 @@ class AppointmentRepository {
     return this.appointments;
   }
 
-  public create(provider: string, date: string): Appointment {
+  public create({ provider, date }: createAppointmentDTO): Appointment {
     const parsedDate = AppointmentRepository.parseAppointmentDate(date);
-    const appointment = new Appointment(provider, parsedDate);
+    const appointment = new Appointment({ provider, date: parsedDate });
 
     this.appointments.push(appointment);
 
