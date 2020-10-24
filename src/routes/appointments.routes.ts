@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import AppointmentRepository from '../repositories/AppointmentRepository';
+import CreateAppointmentService from '../services/CreateAppointmentService';
 
 // Retorna objeto router contendo objeto de functionalidades de rotas do express
 const appointmentsRouter = Router();
@@ -12,17 +13,18 @@ appointmentsRouter.get('/', (req, res) => {
 });
 
 appointmentsRouter.post('/', (req, res) => {
-  const { provider, date } = req.body;
-  const appointmentBooked = appointmentRepository.shouldBookHour(date);
+  try {
+    const { provider, date } = req.body;
 
-  if (appointmentBooked) {
-    return res.status(400).json({
-      message: 'An appointment already exists for this date and time.',
-    });
+    const createAppointmentService = new CreateAppointmentService(
+      appointmentRepository,
+    );
+
+    const appointment = createAppointmentService.execute({ provider, date });
+    return res.json(appointment);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
   }
-
-  const appointment = appointmentRepository.create({ provider, date });
-  return res.json(appointment);
 });
 
 export default appointmentsRouter;
